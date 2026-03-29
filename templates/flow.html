@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telebirr Validator - System Flow</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #064d04;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .flow-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        svg { width: 100%; height: auto; }
+
+        /* Node styles */
+        .node-start, .node-end {
+            fill: #0a7e07;
+            rx: 25;
+            ry: 25;
+        }
+        .node-process {
+            fill: #1976d2;
+            rx: 8;
+            ry: 8;
+        }
+        .node-decision {
+            fill: #ff9800;
+        }
+        .node-success {
+            fill: #0a7e07;
+            rx: 8;
+            ry: 8;
+        }
+        .node-error {
+            fill: #d32f2f;
+            rx: 8;
+            ry: 8;
+        }
+        .node-duplicate {
+            fill: #e65100;
+            rx: 8;
+            ry: 8;
+        }
+        .node-db {
+            fill: #7b1fa2;
+            rx: 8;
+            ry: 8;
+        }
+        .node-text {
+            fill: white;
+            font-size: 13px;
+            font-weight: 600;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        .node-text-small {
+            fill: white;
+            font-size: 11px;
+            font-weight: 500;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        .arrow {
+            stroke: #555;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        .label-yes {
+            fill: #0a7e07;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .label-no {
+            fill: #d32f2f;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .label-note {
+            fill: #666;
+            font-size: 11px;
+            font-style: italic;
+        }
+
+        .legend {
+            max-width: 900px;
+            margin: 30px auto 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #333;
+        }
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .info-section {
+            max-width: 900px;
+            margin: 30px auto 0;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .info-section h2 {
+            color: #064d04;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .info-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-section th, .info-section td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+        .info-section th {
+            background: #f5f5f5;
+            font-weight: 700;
+            color: #333;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #0a7e07;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Telebirr Payment Validator - System Flow</h1>
+
+    <div class="flow-container">
+        <svg viewBox="0 0 860 1150" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#555" />
+                </marker>
+            </defs>
+
+            <!-- ===== ROW 1: START ===== -->
+            <rect class="node-start" x="310" y="20" width="240" height="50"/>
+            <text class="node-text" x="430" y="45">User Pastes SMS / Txn Number</text>
+
+            <!-- Arrow down -->
+            <line class="arrow" x1="430" y1="70" x2="430" y2="110"/>
+
+            <!-- ===== ROW 2: EXTRACT ===== -->
+            <rect class="node-process" x="305" y="110" width="250" height="50"/>
+            <text class="node-text" x="430" y="128">Extract Transaction Number</text>
+            <text class="node-text-small" x="430" y="145">from SMS text, URL, or bare input</text>
+
+            <!-- Arrow down -->
+            <line class="arrow" x1="430" y1="160" x2="430" y2="200"/>
+
+            <!-- ===== ROW 3: DECISION - Txn found? ===== -->
+            <polygon class="node-decision" points="430,200 540,245 430,290 320,245"/>
+            <text class="node-text" x="430" y="242">Txn Number</text>
+            <text class="node-text-small" x="430" y="256">Found?</text>
+
+            <!-- No -> Error -->
+            <line class="arrow" x1="540" y1="245" x2="700" y2="245"/>
+            <text class="label-no" x="600" y="237">NO</text>
+            <rect class="node-error" x="700" y="220" width="150" height="50"/>
+            <text class="node-text" x="775" y="240">Error:</text>
+            <text class="node-text-small" x="775" y="255">No txn number found</text>
+
+            <!-- Yes -> down -->
+            <line class="arrow" x1="430" y1="290" x2="430" y2="330"/>
+            <text class="label-yes" x="445" y="315">YES</text>
+
+            <!-- ===== ROW 4: DUPLICATE CHECK ===== -->
+            <rect class="node-db" x="330" y="330" width="200" height="50"/>
+            <text class="node-text" x="430" y="348">Check SQLite DB</text>
+            <text class="node-text-small" x="430" y="365">Duplicate?</text>
+
+            <!-- Arrow down -->
+            <line class="arrow" x1="430" y1="380" x2="430" y2="420"/>
+
+            <!-- ===== ROW 5: DECISION - Duplicate? ===== -->
+            <polygon class="node-decision" points="430,420 540,465 430,510 320,465"/>
+            <text class="node-text" x="430" y="462">Duplicate?</text>
+
+            <!-- Yes -> Duplicate error -->
+            <line class="arrow" x1="540" y1="465" x2="700" y2="465"/>
+            <text class="label-yes" x="600" y="457">YES</text>
+            <rect class="node-duplicate" x="700" y="440" width="150" height="50"/>
+            <text class="node-text" x="775" y="460">Duplicate!</text>
+            <text class="node-text-small" x="775" y="475">Already validated</text>
+
+            <!-- No -> down -->
+            <line class="arrow" x1="430" y1="510" x2="430" y2="550"/>
+            <text class="label-no" x="445" y="535">NO</text>
+
+            <!-- ===== ROW 6: FETCH RECEIPT ===== -->
+            <rect class="node-process" x="305" y="550" width="250" height="50"/>
+            <text class="node-text" x="430" y="568">Fetch Receipt PDF</text>
+            <text class="node-text-small" x="430" y="585">from ethiotelecom.et</text>
+
+            <!-- Arrow down -->
+            <line class="arrow" x1="430" y1="600" x2="430" y2="640"/>
+
+            <!-- ===== ROW 7: DECISION - Fetched? ===== -->
+            <polygon class="node-decision" points="430,640 540,685 430,730 320,685"/>
+            <text class="node-text" x="430" y="680">Receipt</text>
+            <text class="node-text-small" x="430" y="695">Fetched?</text>
+
+            <!-- No -> SMS fallback (right then down) -->
+            <line class="arrow" x1="540" y1="685" x2="700" y2="685"/>
+            <text class="label-no" x="600" y="677">NO</text>
+
+            <!-- SMS Fallback box -->
+            <rect class="node-process" x="700" y="660" width="150" height="50"/>
+            <text class="node-text" x="775" y="678">SMS Fallback</text>
+            <text class="node-text-small" x="775" y="695">Validate from text</text>
+
+            <!-- SMS fallback arrow down -->
+            <line class="arrow" x1="775" y1="710" x2="775" y2="750"/>
+
+            <!-- SMS Decision -->
+            <polygon class="node-decision" points="775,750 860,785 775,820 690,785"/>
+            <text class="node-text-small" x="775" y="782">"received"</text>
+            <text class="node-text-small" x="775" y="797">+ name?</text>
+
+            <!-- SMS Yes -->
+            <line class="arrow" x1="775" y1="820" x2="775" y2="860"/>
+            <text class="label-yes" x="790" y="845">YES</text>
+            <rect class="node-success" x="700" y="860" width="150" height="50"/>
+            <text class="node-text" x="775" y="880">SMS Verified</text>
+            <text class="node-text-small" x="775" y="897">Save to DB</text>
+
+            <!-- SMS No -->
+            <line class="arrow" x1="690" y1="785" x2="610" y2="785"/>
+            <text class="label-no" x="640" y="777">NO</text>
+            <rect class="node-error" x="490" y="760" width="120" height="50"/>
+            <text class="node-text" x="550" y="780">Error:</text>
+            <text class="node-text-small" x="550" y="795">Not received</text>
+
+            <!-- Yes -> down (PDF path) -->
+            <line class="arrow" x1="430" y1="730" x2="430" y2="770"/>
+            <text class="label-yes" x="445" y="755">YES</text>
+
+            <!-- ===== ROW 8: OCR ===== -->
+            <rect class="node-process" x="305" y="770" width="250" height="50"/>
+            <text class="node-text" x="430" y="788">OCR Receipt PDF</text>
+            <text class="node-text-small" x="430" y="805">Extract text via Tesseract</text>
+
+            <!-- Arrow down -->
+            <line class="arrow" x1="430" y1="820" x2="430" y2="860"/>
+
+            <!-- ===== ROW 9: PARSE ===== -->
+            <rect class="node-process" x="305" y="860" width="250" height="50"/>
+            <text class="node-text" x="430" y="878">Parse Receipt Fields</text>
+            <text class="node-text-small" x="430" y="895">Payer, Credited Party, Amount</text>
+
+            <!-- Arrow down -->
+            <line class="arrow" x1="430" y1="910" x2="430" y2="950"/>
+
+            <!-- ===== ROW 10: VALIDATE ===== -->
+            <polygon class="node-decision" points="430,950 560,1000 430,1050 300,1000"/>
+            <text class="node-text" x="430" y="993">Credited to</text>
+            <text class="node-text-small" x="430" y="1010">my account?</text>
+
+            <!-- No -> Error -->
+            <line class="arrow" x1="300" y1="1000" x2="130" y2="1000"/>
+            <text class="label-no" x="200" y="992">NO</text>
+            <rect class="node-error" x="10" y="975" width="120" height="50"/>
+            <text class="node-text" x="70" y="995">Error:</text>
+            <text class="node-text-small" x="70" y="1010">Wrong account</text>
+
+            <!-- Yes -> Success -->
+            <line class="arrow" x1="430" y1="1050" x2="430" y2="1090"/>
+            <text class="label-yes" x="445" y="1075">YES</text>
+
+            <!-- ===== ROW 11: SUCCESS ===== -->
+            <rect class="node-success" x="330" y="1090" width="200" height="50"/>
+            <text class="node-text" x="430" y="1108">Payment Verified!</text>
+            <text class="node-text-small" x="430" y="1125">Save to DB</text>
+
+        </svg>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-box" style="background:#0a7e07;border-radius:12px"></div>
+            Start / Success
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background:#1976d2"></div>
+            Process
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background:#ff9800;transform:rotate(45deg);width:15px;height:15px"></div>
+            Decision
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background:#7b1fa2"></div>
+            Database
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background:#e65100"></div>
+            Duplicate Warning
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background:#d32f2f"></div>
+            Error / Rejected
+        </div>
+    </div>
+
+    <!-- Detail Table -->
+    <div class="info-section">
+        <h2>System Components</h2>
+        <table>
+            <tr>
+                <th>Component</th>
+                <th>Technology</th>
+                <th>Purpose</th>
+            </tr>
+            <tr>
+                <td>Web Server</td>
+                <td>Python Flask (port 1111)</td>
+                <td>Serves the form and handles validation requests</td>
+            </tr>
+            <tr>
+                <td>Text Parser</td>
+                <td>Python Regex</td>
+                <td>Extracts transaction number, amount, sender from SMS text</td>
+            </tr>
+            <tr>
+                <td>Receipt Fetcher</td>
+                <td>Python Requests</td>
+                <td>Downloads receipt PDF from transactioninfo.ethiotelecom.et</td>
+            </tr>
+            <tr>
+                <td>PDF OCR</td>
+                <td>PyMuPDF + Tesseract</td>
+                <td>Converts image-based receipt PDF to readable text</td>
+            </tr>
+            <tr>
+                <td>Receipt Parser</td>
+                <td>Python Regex</td>
+                <td>Extracts Payer, Credited Party, Amount, Status from receipt</td>
+            </tr>
+            <tr>
+                <td>Validator</td>
+                <td>Python</td>
+                <td>Checks Credited Party = your account, Status = Completed</td>
+            </tr>
+            <tr>
+                <td>Duplicate DB</td>
+                <td>SQLite (transactions.db)</td>
+                <td>Stores validated transactions to prevent reuse</td>
+            </tr>
+            <tr>
+                <td>Frontend</td>
+                <td>HTML / CSS / JavaScript</td>
+                <td>Form input + popup results (success / error / duplicate)</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="info-section">
+        <h2>Validation Levels</h2>
+        <table>
+            <tr>
+                <th>Level</th>
+                <th>When</th>
+                <th>What it checks</th>
+            </tr>
+            <tr>
+                <td style="color:#0a7e07;font-weight:700">Level 1: PDF Receipt</td>
+                <td>Receipt PDF fetched + OCR works</td>
+                <td>Credited Party name + phone matches your account, Status = Completed, Amount extracted</td>
+            </tr>
+            <tr>
+                <td style="color:#1976d2;font-weight:700">Level 2: SMS Fallback</td>
+                <td>Receipt PDF unavailable (network/VPN)</td>
+                <td>Message type = "received", Account holder = your name, Amount extracted</td>
+            </tr>
+            <tr>
+                <td style="color:#e65100;font-weight:700">Duplicate Check</td>
+                <td>Always (before any validation)</td>
+                <td>Transaction number not already in database</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="info-section">
+        <h2>Accepted Input Formats</h2>
+        <table>
+            <tr>
+                <th>Format</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>Full SMS text</td>
+                <td>Dear Tewodros You have received ETB 200.00 from Tamirat Abebe...</td>
+            </tr>
+            <tr>
+                <td>Transaction number only</td>
+                <td>DCD4QNVEX2</td>
+            </tr>
+            <tr>
+                <td>SMS with receipt URL</td>
+                <td>...click this link: https://transactioninfo.ethiotelecom.et/receipt/DCR7AQHS65</td>
+            </tr>
+        </table>
+    </div>
+
+    <a href="/" class="back-link">Back to Payment Validator</a>
+</body>
+</html>
